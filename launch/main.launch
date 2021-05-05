@@ -1,0 +1,53 @@
+<launch>
+  <!-- No namespace here as we will share this description. 
+       Access with slash at the beginning -->
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find turtlebot3_gazebo)/worlds/empty.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+  <!-- BEGIN ROBOT 1-->
+  <group ns="robot1">
+    <param name="tf_prefix" value="robot1_tf" />
+    <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_empty_world.launch" >
+      <arg name="x_pos" value="2.5" />
+      <arg name="y_pos" value="3" />
+      <arg name="namespace"  value="Robot1" />
+    </include>
+  </group>
+
+  <!-- BEGIN ROBOT 2-->
+  <group ns="robot2">
+    <param name="tf_prefix" value="robot2_tf" />
+    <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_empty_world.launch" >
+      <arg name="x_pos" value="3" />
+      <arg name="y_pos" value="2.5" />
+      <arg name="namespace"  value="Robot2" />
+    </include>
+  </group>
+
+  <!-- BEGIN ROBOT 3-->
+  <group ns="robot3">
+    <param name="tf_prefix" value="robot3_tf" />
+    <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_empty_world.launch" >
+      <arg name="x_pos" value="3" />
+      <arg name="y_pos" value="3.5" />
+      <arg name="namespace"  value="Robot3" />
+    </include>
+  </group>
+
+  <!-- BEGIN ROBOT 4-->
+  <group ns="robot4">
+    <param name="tf_prefix" value="robot4_tf" />
+    <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_empty_world.launch" >
+      <arg name="x_pos" value="3.5" />
+      <arg name="y_pos" value="3" />
+      <arg name="namespace"  value="Robot4" />
+    </include>
+  </group>
+
+</launch>
