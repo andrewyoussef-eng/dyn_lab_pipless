@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 import rospy
 from geometry_msgs.msg import Twist
-from turtlebot3_msgs.msg import SensorState
 from nav_msgs.msg import Odometry
 import rospy
 import math
-from ackermann_msgs.msg import AckermannDriveStamped
 from std_msgs.msg import Float64
-#from turtlesim.msg import Pose        #import msg data type "Pose" to be subscribed
 import numpy as np                    #import numpy for trignometric function, arrays... etc
 import sys                            #import sys for extracting input from termminal (input from user)
 from nav_msgs.msg import Odometry
@@ -136,15 +133,5 @@ else:
   sub4 = rospy.Subscriber("/robot4/odom", Odometry, callback4) #Identify the subscriber "sub2" to subscribe topic "/turtle1/pose" of type "Pose"
 global cmd_msg1
 cmd_msg1 = Twist()
-#rate = rospy.Rate(10) # rate of publishing msg 10hz
-#while 1:
-#   msg.linear.x = 1
-#   msg.linear.y = 0 
-#   msg.linear.z = 0 
-#   msg.angular.x = 0
-#   msg.angular.y = 0
-#   msg.angular.z = 0
-#   cmd_pub1.publish(msg)
-#   print("x",xcord,"y",ycord,"x1",xcord_3,"y1",ycord_3)
-#   rate.sleep()		#Sleep with rate
+
    
