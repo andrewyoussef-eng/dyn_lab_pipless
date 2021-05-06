@@ -11,7 +11,6 @@ from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 rospy.init_node('test', anonymous=True)
-# global cmd_pub1
 cmd_pub1 = rospy.Publisher("/"+str(name)+"/cmd_vel", Twist,queue_size=10)
 global yaw
 global stuck
@@ -93,7 +92,6 @@ def callback3(data):
   global xcord3
   global ycord3
   
-  #pos_msg = data				#Initialize pos_msg with data sent to the function
   xcord3 = round(data.pose.pose.position.x, 4)		#Round the value of x to 4 decimal places
   ycord3 = round(data.pose.pose.position.y, 4)		#Round the value of y to 4 decimal places
   quaternion3 = (data.pose.pose.orientation.x,
@@ -117,7 +115,6 @@ def callback4(data):
   global xcord4
   global ycord4
   
-  #pos_msg = data				#Initialize pos_msg with data sent to the function
   xcord4 = round(data.pose.pose.position.x, 4)		#Round the value of x to 4 decimal places
   ycord4 = round(data.pose.pose.position.y, 4)		#Round the value of y to 4 decimal places
   quaternion4 = (data.pose.pose.orientation.x,
