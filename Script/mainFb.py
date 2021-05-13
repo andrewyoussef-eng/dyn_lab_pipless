@@ -19,9 +19,8 @@ from tf.transformations import euler_from_quaternion, quaternion_from_euler
 class mainFb:
     def __init__(self,name,xF,yF):
         name = name
-        time.sleep(2)
+        time.sleep(1)
         execfile("Test.py") # gazebo turtlebot3 subscribers and publishers file
-
         # this parameter must be 0 because it is not a python simulation
         sim=0
 
@@ -34,19 +33,19 @@ class mainFb:
 
         ID_com = 1
 
-        nr_obst = 3
 
-        xInt1 = float(xcord)        #x1_initial Position
-        yInt1 = float(ycord)        #y1_initial Position
-        thetaInt1=float(thetayaw)   #Robot initial Angle
+        xInt1 = float(cur_pos[0])        #x1_initial Position of robot
+        yInt1 = float(cur_pos[1])        #y1_initial Position  of robot
+        thetaInt1=float(theta1[0])   #Robot initial Angle
         xFin1= float(xF)      #x1_final defined by C#
         yFin1=float(yF)       #y1_final defined by C#
 
         xInt = []; yInt =[]; thetaInit =[]
-
-        xInt = NP.array([float(xcord2),float(xcord3),float(xcord4)])
-        yInt = NP.array([float(ycord2),float(ycord3),float(ycord4)])
-        thetaInit = NP.array([float(thetayaw2),float(thetayaw3),float(thetayaw4)])
+        nr_obst = (len(cur_pos)-2)/2
+        for i in range(nr_obst):
+            xInt.append(cur_pos[i+2])
+            yInt.append(cur_pos[i+3])
+            thetaInit.append(theta1[i+1])
 
         x1_0=xInt1
         y1_0=yInt1
@@ -56,6 +55,7 @@ class mainFb:
 
 
         execfile("MsNmpc.py")
+
 # function to obtain input docking point
 def new_point(xF,yF):
     if(xF==3 and yF==0):
@@ -97,20 +97,20 @@ def bound(x,y):
 
 # checking if destination is free
 def station(xF,yF):
-    if(sqrt((xcord2 - xF) ** 2 + (ycord2 - yF) ** 2) < 200 / 1000.0 or sqrt((xcord3 - xF) ** 2 + (ycord3 - yF) ** 2) < 200 / 1000.0  or sqrt((xcord4 - xF) ** 2 + (ycord4 - yF) ** 2) < 200 / 1000.0):
-        return True 
-    else:
-        return False
+    for i in range(nr_obst):
+        if(sqrt((cur_pos[i+2] - xF) ** 2 + (cur_pos[i+3] - yF) ** 2) < 200 / 1000.0):
+            return True 
+        else:
+            return False
 # checking if robot is in a station
 def in_station(xF,yF):
-    if(sqrt((xcord - 3) ** 2 + (ycord - 0) ** 2) < 500 / 1000.0 or sqrt((xcord - 0) ** 2 + (ycord - 3) ** 2) < 500 / 1000.0  or sqrt((xcord - 3) ** 2 + (ycord - 6) ** 2) < 500 / 1000.0 or sqrt((xcord - 6) ** 2 + (ycord - 3) ** 2) < 500 / 1000.0):
+    if(sqrt((cur_pos[0] - 3) ** 2 + (cur_pos[1] - 0) ** 2) < 500 / 1000.0 or sqrt((cur_pos[0] - 0) ** 2 + (cur_pos[1] - 3) ** 2) < 500 / 1000.0  or sqrt((cur_pos[0] - 3) ** 2 + (cur_pos[1] - 6) ** 2) < 500 / 1000.0 or sqrt((cur_pos[0] - 6) ** 2 + (cur_pos[1] - 3) ** 2) < 500 / 1000.0):
         return True 
     else:
         return False
 
 # finding free spots to position each robot
 def free_spot(x,y):
-    print(sqrt((xcord4 - x) ** 2 + (ycord4 - y) ** 2) )
     while(station(x,y)):
         if(x==6):
             x=x-1.5
@@ -127,18 +127,18 @@ def free_spot(x,y):
 
 
 name = sys.argv[1]    # name of robot to be controlled as input argument
-time.sleep(2)        
+time.sleep(1)        
 execfile("Test.py")   # gazebo turtlebot3 subscribers and publishers file
-time.sleep(2)
+
 # final destination
 xF = float(sys.argv[2]) 
 yF = float(sys.argv[3])
 # going to output docking point if the robot is in station
-if(in_station(xcord,ycord) and sqrt((xcord - xF) ** 2 + (ycord - yF) ** 2)>500/1000):
-    x1,y1 = new_point(xcord,ycord)
+if(in_station(cur_pos[0],cur_pos[1]) and sqrt((cur_pos[0] - xF) ** 2 + (cur_pos[1] - yF) ** 2)>500/1000):
+    x1,y1 = new_point(cur_pos[0],cur_pos[1])
     mainFb(name,x1,y1)
 # loop until reaching destination
-while(sqrt((xcord - xF) ** 2 + (ycord - yF) ** 2) > 100 / 1000.0):
+while(sqrt((cur_pos[0] - xF) ** 2 + (cur_pos[1] - yF) ** 2) > 100 / 1000.0):
     x,y=free_spot(xF,yF)
     print(x)
     print(y)
@@ -150,6 +150,3 @@ while(sqrt((xcord - xF) ** 2 + (ycord - yF) ** 2) > 100 / 1000.0):
         mainFb(name,x,y)
     else:
         mainFb(name,x,y)
-
-
-
