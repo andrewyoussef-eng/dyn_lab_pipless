@@ -15,8 +15,10 @@ Date: JAN 2016
 	
 **********************************************************************
 """
-
-
+xpos = []
+ypos = []
+time1 =[]
+start_time= time.time()
 takeEstimateRobot1 = 0
 takeEstimateRobot2 = 0
 Estop = 0
@@ -131,8 +133,8 @@ u_ub = NP.array([vel1_ub, omega1_ub])
 u_init0 = NP.array([vel1_init, omega1_init])
 
 epsilon = SX.sym("epsilon", 1)
-epsilon_lbf = NP.array([-1.0])
-epsilon_ubf = NP.array([1.0])
+epsilon_lbf = NP.array([-10.0])
+epsilon_ubf = NP.array([10.0])
 epsilon_init = NP.zeros(1)
 
 
@@ -379,7 +381,7 @@ u_mpc = NP.resize(NP.array([]), (nu))
 vPrev = deepcopy(u_mpc)
 BIAS = NP.resize(NP.array([]), (3))
 x0_sim = x_init
-plt.ion()
+#plt.ion()
 index_mpc = 1
 x0_sim = x0[0:nx_]
 
@@ -389,11 +391,11 @@ x1_sim[1] = yInt[0]  # 1720/1000.0
 
 currentPos = deepcopy(x0_sim)
 
-x1_sim[2] = thetayaw
+x1_sim[2] = thetaInit[0]
 x2_sim = deepcopy(x_init)
 x2_sim[0] = xInt[1]
 x2_sim[1] = yInt[1]
-x1_sim[2] = thetayaw2
+x1_sim[2] = thetaInit[1]
 v1 = 0.0 / 1000.0
 omega1 = 0.0 / 6
 p_est_current = p_real
@@ -415,10 +417,15 @@ currenttime = time.time()
 # for ending the batch has been already produced
 
 while (index_mpc * t_step < end_time):
-
+    
+    
     vel1Plant = u_mpc[0]
     omega1Plant = u_mpc[1]
-   
+    #cur_pos = [xcord,ycord,xcord2,ycord2,xcord3,ycord3,xcord4,ycord4] # x and y positions of robots
+    #theta = [thetayaw,thetayaw2,thetayaw3,thetayaw4] # theta orientations of the robots
+    xpos.append(float(cur_pos[0]))
+    ypos.append(float(cur_pos[1]))
+    time1.append(float(time.time()-start_time))
 
     vPrev = deepcopy(u_mpc)
     # Solve the problem
@@ -454,39 +461,27 @@ while (index_mpc * t_step < end_time):
     j = 0
 
 
-    cur_pos = [xcord,ycord,thetayaw,xcord2,ycord2,thetayaw2,xcord3,ycord3,thetayaw3,xcord4,ycord4,thetayaw4]
-    print cur_pos
-    currentX1 = float(cur_pos[0])  # x_initial Position
-    currentY1 = float(cur_pos[1])  # y_initial Position
-    currentTheta1 = float(cur_pos[2])
-    currentX2 = float(cur_pos[3])
-    currentY2 = float(cur_pos[4])
-    currentTheta2 = float(cur_pos[5])
-    currentX3 = float(cur_pos[6])
-    currentY3 = float(cur_pos[7])
-    currentTheta3 = float(cur_pos[8])
-    currentX4 = float(cur_pos[9])
-    currentY4 = float(cur_pos[10])
-    currentTheta4 = float(cur_pos[11])
 
-
-  
-    robot1Pos = NP.array([currentX1, currentY1, currentTheta1])
+    obst_pos = []
+    robot1Pos = NP.array([float(cur_pos[0]), float(cur_pos[1]), float(theta1[0])])
     u_mpcRobot1 = NP.array([u_mpc[0], u_mpc[1]])
-    obstacle1Pos = NP.array([currentX2, currentY2, currentTheta2])
-    obstacle2Pos = NP.array([currentX3, currentY3, currentTheta3])
-    obstacle3Pos = NP.array([currentX4, currentY4, currentTheta4])
+    for i in range(nr_obst):
+        xx = float(cur_pos[i+2])
+        yy = float(cur_pos[i+3])
+        tata=float(theta1[i+1])
+        obst_pos.append(NP.array([xx,yy,tata]))
+
 
     if (sqrt((robot1Pos[0] - goal[0]) ** 2 + (robot1Pos[1] - goal[1]) ** 2) < 10 / 1000.0):
         print index_mpc
         break
 
-
+    xsim = []
     if sim==0:
         x0_sim=deepcopy(robot1Pos)
-        x1_sim=deepcopy(obstacle1Pos)
-        x2_sim=deepcopy(obstacle2Pos)
-        x3_sim=deepcopy(obstacle3Pos)
+        for i in range(nr_obst):
+            xsim.append(deepcopy(obst_pos[i]))
+
 
     print(x0_sim)
 
@@ -500,7 +495,6 @@ while (index_mpc * t_step < end_time):
     p_ub = NP.array([0.1, +0.1])
     # use this to have only lower and upper bounds in the scenario tree and not the nominal case
 
-    # omega1+=NP.random.uniform(-0.3,0.3)
     if v1 < -0.4:
         v1 = -0.4
     elif v1 > 0.4:
@@ -533,17 +527,18 @@ while (index_mpc * t_step < end_time):
         for s in range(n_scenarios1[k]):
             # For all uncertainty realizations
             if k == 0:
+                x1_sim = xsim[0] 
                 z_obst[k, s] = x1_sim[0:nx]
                 z_obst[k,s+2] = x1_sim[0:nx]
                 V_est[k, s] = NP.array([0, 0])
             for b in range(n_branches1[k]):
                 integrator.setInput(V_est[k, s], INTEGRATOR_P)
-                if ((xcord-xcord2)**2+(ycord-ycord2)**2)-((xcord-xcord3)**2+(ycord-ycord3)**2)<0 and ((xcord-xcord2)**2 + (ycord-ycord2)**2)-((xcord-xcord4)**2+(ycord-ycord4)**2)<0:
-                    integrator.setInput(x1_sim[0:nx], INTEGRATOR_X0)
-                elif ((xcord-xcord3)**2 + (ycord-ycord3)**2)-((xcord-xcord2)**2+(ycord-ycord2)**2)<0 and ((xcord-xcord3)**2 + (ycord-ycord3)**2)-((xcord-xcord4)**2 + (ycord-ycord4)**2)<0:   
-                    integrator.setInput(x2_sim[0:nx], INTEGRATOR_X0)
-                elif ((xcord-xcord4)**2 + (ycord-ycord4)**2)-((xcord-xcord3)**2+(ycord-ycord3)**2)<0 and ((xcord-xcord4)**2 + (ycord-ycord4)**2)-((xcord-xcord2)**2 + (ycord-ycord2)**2)<0:
-                    integrator.setInput(x3_sim[0:nx], INTEGRATOR_X0)
+                smallest = 100
+                for a in range(nr_obst):
+                    if ((cur_pos[0]-cur_pos[a+2])**2+(cur_pos[1]-cur_pos[a+3])**2)<smallest:
+                        smallest = ((cur_pos[0]-cur_pos[a+2])**2+(cur_pos[1]-cur_pos[a+3])**2)
+                        integrator_input = xsim[a]
+                integrator.setInput(integrator_input[0:nx], INTEGRATOR_X0)
                 integrator.evaluate()
                 integrator.setOption("t0", 0)
                 integrator.setOption("tf", t_step)
@@ -557,12 +552,12 @@ while (index_mpc * t_step < end_time):
                 pk_ext_init0[temp_p:temp_p + nc_p] = NP.squeeze(integrator.getOutput())[0:nc_p]
                 temp_p += nc_p
               
-    pk_ext_init0[0] = currentX3
-    pk_ext_init0[1] = currentY3
-    pk_ext_init0[2] = currentX3
-    pk_ext_init0[3] = currentY3
-    pk_ext_init0[4] = currentX4
-    pk_ext_init0[5] = currentY4
+    pk_ext_init0[0] = cur_pos[2]
+    pk_ext_init0[1] = cur_pos[3]
+    pk_ext_init0[2] = cur_pos[4]
+    pk_ext_init0[3] = cur_pos[5]
+    pk_ext_init0[4] = cur_pos[6]
+    pk_ext_init0[5] = cur_pos[7]
 
     if ((x0_sim[0] - x1_sim[0]) ** 2 + (x0_sim[1] - x1_sim[1]) ** 2) < 0.1156:
         count_vio = count_vio + 1
@@ -577,7 +572,7 @@ while (index_mpc * t_step < end_time):
     solver.setInput(solver.getOutput(NLP_SOLVER_LAM_G), NLP_SOLVER_LAM_G0)
     # Store the necessary information for the final MPC plots
     mpc_states[index_mpc, :] = x0_sim
-    mpc_obstacles[index_mpc, :] = x2_sim
+    mpc_obstacles[index_mpc, :] = xsim[1]
     mpc_control[index_mpc, :] = u_mpc
     mpc_time[index_mpc] = t0_sim
     mpc_parameters_true[index_mpc, :] = p_real
@@ -598,6 +593,10 @@ while (index_mpc * t_step < end_time):
 
 u_mpc[0] = 0
 u_mpc[1] = 0
+#print(xpos)
+#print(ypos)
+#print(time1)
+# execfile("plot.py")
 
 
 cmd_msg1.linear.x=u_mpc[0]
