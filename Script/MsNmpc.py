@@ -421,8 +421,6 @@ while (index_mpc * t_step < end_time):
     
     vel1Plant = u_mpc[0]
     omega1Plant = u_mpc[1]
-    #cur_pos = [xcord,ycord,xcord2,ycord2,xcord3,ycord3,xcord4,ycord4] # x and y positions of robots
-    #theta = [thetayaw,thetayaw2,thetayaw3,thetayaw4] # theta orientations of the robots
     xpos.append(float(cur_pos[0]))
     ypos.append(float(cur_pos[1]))
     time1.append(float(time.time()-start_time))
@@ -593,11 +591,6 @@ while (index_mpc * t_step < end_time):
 
 u_mpc[0] = 0
 u_mpc[1] = 0
-#print(xpos)
-#print(ypos)
-#print(time1)
-# execfile("plot.py")
-
 
 cmd_msg1.linear.x=u_mpc[0]
 cmd_msg1.angular.z=u_mpc[1]
