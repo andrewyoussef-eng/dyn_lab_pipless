@@ -55,7 +55,7 @@ class mainFb:
 
 
         execfile("MsNmpc.py")
-
+##################################################DESIGNED SCHEDULER THAT WILL BE CHANGED IN THE FUTURE ##########################################################
 # function to obtain input docking point
 def new_point(xF,yF):
     if(xF==3 and yF==0):
@@ -150,3 +150,4 @@ while(sqrt((cur_pos[0] - xF) ** 2 + (cur_pos[1] - yF) ** 2) > 100 / 1000.0):
         mainFb(name,x,y)
     else:
         mainFb(name,x,y)
+#########################################################################################################################################################################
