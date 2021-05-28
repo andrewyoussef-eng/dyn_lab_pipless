@@ -129,7 +129,7 @@ def free_spot(x,y):
 name = sys.argv[1]    # name of robot to be controlled as input argument
 time.sleep(1)        
 execfile("Test.py")   # gazebo turtlebot3 subscribers and publishers file
-
+time.sleep(1) 
 # final destination
 xF = float(sys.argv[2]) 
 yF = float(sys.argv[3])
